@@ -931,7 +931,7 @@ $cmbTheme.Add_SelectedIndexChanged({
 
 # =================== DASHBOARD BUTTON (in header) ===================
 $btnDashboard = New-Object System.Windows.Forms.Button
-$btnDashboard.Text = "📊"
+$btnDashboard.Text = "STATS"
 $btnDashboard.Location = New-Object System.Drawing.Point(220, 20)
 $btnDashboard.Size = New-Object System.Drawing.Size(40, 40)
 $btnDashboard.BackColor = $theme.bgElevated
@@ -954,7 +954,7 @@ function Show-Dashboard {
     
     # Titolo
     $lblTitle = New-Object System.Windows.Forms.Label
-    $lblTitle.Text = "📊 ALERT DASHBOARD"
+    $lblTitle.Text = "ALERT DASHBOARD"
     $lblTitle.Font = New-Object System.Drawing.Font("Segoe UI", 18, [System.Drawing.FontStyle]::Bold)
     $lblTitle.ForeColor = $theme.accent
     $lblTitle.Location = New-Object System.Drawing.Point(20, 15)
@@ -1154,7 +1154,7 @@ function Show-Dashboard {
     $troPct = if ($totalActive -gt 0) { [math]::Round(($troubleCount / $totalActive) * 100, 1) } else { 0 }
     
     $lblStats = New-Object System.Windows.Forms.Label
-    $lblStats.Text = "📈 STATISTICS`n`nCritical Rate: $critPct%   |   Attention Rate: $attPct%   |   Trouble Rate: $troPct%`nResolution Rate: $(if ($script:allEmails.Count -gt 0) { [math]::Round(($clearedCount / $script:allEmails.Count) * 100, 1) } else { 0 })%"
+    $lblStats.Text = "STATISTICS`n`nCritical Rate: $critPct%   |   Attention Rate: $attPct%   |   Trouble Rate: $troPct%`nResolution Rate: $(if ($script:allEmails.Count -gt 0) { [math]::Round(($clearedCount / $script:allEmails.Count) * 100, 1) } else { 0 })%"
     $lblStats.Font = New-Object System.Drawing.Font("Segoe UI", 10)
     $lblStats.ForeColor = $theme.textPrimary
     $lblStats.Location = New-Object System.Drawing.Point(15, 10)
