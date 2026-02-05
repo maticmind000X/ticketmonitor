@@ -82,24 +82,128 @@ $script:matchFieldTypes = @(
     "Custom Regex"
 )
 
-# =================== TEMA DASHBOARD ===================
-$theme = @{
-    bgDeep      = [System.Drawing.Color]::FromArgb(4, 6, 13)
-    bgMain      = [System.Drawing.Color]::FromArgb(8, 12, 24)
-    bgPanel     = [System.Drawing.Color]::FromArgb(13, 20, 36)
-    bgCard      = [System.Drawing.Color]::FromArgb(17, 26, 46)
-    bgElevated  = [System.Drawing.Color]::FromArgb(22, 32, 56)
-    bgInput     = [System.Drawing.Color]::FromArgb(30, 42, 70)
-    border      = [System.Drawing.Color]::FromArgb(50, 80, 120)
-    textPrimary = [System.Drawing.Color]::FromArgb(232, 240, 255)
-    textSecond  = [System.Drawing.Color]::FromArgb(139, 163, 199)
-    textMuted   = [System.Drawing.Color]::FromArgb(90, 112, 148)
-    accent      = [System.Drawing.Color]::FromArgb(0, 212, 255)
-    critical    = [System.Drawing.Color]::FromArgb(255, 77, 106)
-    attention   = [System.Drawing.Color]::FromArgb(255, 204, 0)
-    trouble     = [System.Drawing.Color]::FromArgb(255, 140, 66)
-    clear       = [System.Drawing.Color]::FromArgb(0, 232, 144)
-    resolved    = [System.Drawing.Color]::FromArgb(100, 180, 100)
+# =================== TEMI DISPONIBILI ===================
+$script:themes = @{
+    "Dark Blue" = @{
+        bgDeep      = [System.Drawing.Color]::FromArgb(4, 6, 13)
+        bgMain      = [System.Drawing.Color]::FromArgb(8, 12, 24)
+        bgPanel     = [System.Drawing.Color]::FromArgb(13, 20, 36)
+        bgCard      = [System.Drawing.Color]::FromArgb(17, 26, 46)
+        bgElevated  = [System.Drawing.Color]::FromArgb(22, 32, 56)
+        bgInput     = [System.Drawing.Color]::FromArgb(30, 42, 70)
+        border      = [System.Drawing.Color]::FromArgb(50, 80, 120)
+        textPrimary = [System.Drawing.Color]::FromArgb(232, 240, 255)
+        textSecond  = [System.Drawing.Color]::FromArgb(139, 163, 199)
+        textMuted   = [System.Drawing.Color]::FromArgb(90, 112, 148)
+        accent      = [System.Drawing.Color]::FromArgb(0, 212, 255)
+        critical    = [System.Drawing.Color]::FromArgb(255, 77, 106)
+        attention   = [System.Drawing.Color]::FromArgb(255, 204, 0)
+        trouble     = [System.Drawing.Color]::FromArgb(255, 140, 66)
+        clear       = [System.Drawing.Color]::FromArgb(0, 232, 144)
+        resolved    = [System.Drawing.Color]::FromArgb(100, 180, 100)
+    }
+    "Dark Purple" = @{
+        bgDeep      = [System.Drawing.Color]::FromArgb(10, 5, 18)
+        bgMain      = [System.Drawing.Color]::FromArgb(18, 10, 30)
+        bgPanel     = [System.Drawing.Color]::FromArgb(28, 18, 45)
+        bgCard      = [System.Drawing.Color]::FromArgb(38, 25, 60)
+        bgElevated  = [System.Drawing.Color]::FromArgb(50, 35, 75)
+        bgInput     = [System.Drawing.Color]::FromArgb(60, 45, 90)
+        border      = [System.Drawing.Color]::FromArgb(100, 70, 140)
+        textPrimary = [System.Drawing.Color]::FromArgb(240, 235, 255)
+        textSecond  = [System.Drawing.Color]::FromArgb(180, 160, 210)
+        textMuted   = [System.Drawing.Color]::FromArgb(120, 100, 160)
+        accent      = [System.Drawing.Color]::FromArgb(180, 100, 255)
+        critical    = [System.Drawing.Color]::FromArgb(255, 77, 106)
+        attention   = [System.Drawing.Color]::FromArgb(255, 204, 0)
+        trouble     = [System.Drawing.Color]::FromArgb(255, 140, 66)
+        clear       = [System.Drawing.Color]::FromArgb(0, 232, 144)
+        resolved    = [System.Drawing.Color]::FromArgb(100, 180, 100)
+    }
+    "Dark Green" = @{
+        bgDeep      = [System.Drawing.Color]::FromArgb(5, 12, 8)
+        bgMain      = [System.Drawing.Color]::FromArgb(8, 20, 14)
+        bgPanel     = [System.Drawing.Color]::FromArgb(12, 30, 22)
+        bgCard      = [System.Drawing.Color]::FromArgb(18, 42, 32)
+        bgElevated  = [System.Drawing.Color]::FromArgb(25, 55, 42)
+        bgInput     = [System.Drawing.Color]::FromArgb(35, 70, 55)
+        border      = [System.Drawing.Color]::FromArgb(60, 110, 85)
+        textPrimary = [System.Drawing.Color]::FromArgb(230, 255, 240)
+        textSecond  = [System.Drawing.Color]::FromArgb(150, 200, 175)
+        textMuted   = [System.Drawing.Color]::FromArgb(100, 150, 125)
+        accent      = [System.Drawing.Color]::FromArgb(0, 255, 180)
+        critical    = [System.Drawing.Color]::FromArgb(255, 77, 106)
+        attention   = [System.Drawing.Color]::FromArgb(255, 204, 0)
+        trouble     = [System.Drawing.Color]::FromArgb(255, 140, 66)
+        clear       = [System.Drawing.Color]::FromArgb(0, 232, 144)
+        resolved    = [System.Drawing.Color]::FromArgb(100, 180, 100)
+    }
+    "Light" = @{
+        bgDeep      = [System.Drawing.Color]::FromArgb(245, 247, 250)
+        bgMain      = [System.Drawing.Color]::FromArgb(238, 242, 248)
+        bgPanel     = [System.Drawing.Color]::FromArgb(255, 255, 255)
+        bgCard      = [System.Drawing.Color]::FromArgb(250, 252, 255)
+        bgElevated  = [System.Drawing.Color]::FromArgb(235, 240, 248)
+        bgInput     = [System.Drawing.Color]::FromArgb(255, 255, 255)
+        border      = [System.Drawing.Color]::FromArgb(200, 210, 225)
+        textPrimary = [System.Drawing.Color]::FromArgb(30, 40, 60)
+        textSecond  = [System.Drawing.Color]::FromArgb(80, 95, 120)
+        textMuted   = [System.Drawing.Color]::FromArgb(130, 145, 165)
+        accent      = [System.Drawing.Color]::FromArgb(0, 120, 215)
+        critical    = [System.Drawing.Color]::FromArgb(220, 50, 80)
+        attention   = [System.Drawing.Color]::FromArgb(200, 160, 0)
+        trouble     = [System.Drawing.Color]::FromArgb(220, 120, 50)
+        clear       = [System.Drawing.Color]::FromArgb(0, 160, 100)
+        resolved    = [System.Drawing.Color]::FromArgb(80, 150, 80)
+    }
+    "Midnight" = @{
+        bgDeep      = [System.Drawing.Color]::FromArgb(0, 0, 0)
+        bgMain      = [System.Drawing.Color]::FromArgb(10, 10, 12)
+        bgPanel     = [System.Drawing.Color]::FromArgb(18, 18, 22)
+        bgCard      = [System.Drawing.Color]::FromArgb(25, 25, 30)
+        bgElevated  = [System.Drawing.Color]::FromArgb(35, 35, 42)
+        bgInput     = [System.Drawing.Color]::FromArgb(45, 45, 55)
+        border      = [System.Drawing.Color]::FromArgb(70, 70, 85)
+        textPrimary = [System.Drawing.Color]::FromArgb(255, 255, 255)
+        textSecond  = [System.Drawing.Color]::FromArgb(180, 180, 190)
+        textMuted   = [System.Drawing.Color]::FromArgb(120, 120, 135)
+        accent      = [System.Drawing.Color]::FromArgb(100, 200, 255)
+        critical    = [System.Drawing.Color]::FromArgb(255, 77, 106)
+        attention   = [System.Drawing.Color]::FromArgb(255, 204, 0)
+        trouble     = [System.Drawing.Color]::FromArgb(255, 140, 66)
+        clear       = [System.Drawing.Color]::FromArgb(0, 232, 144)
+        resolved    = [System.Drawing.Color]::FromArgb(100, 180, 100)
+    }
+}
+
+$script:currentTheme = "Dark Blue"
+$theme = $script:themes[$script:currentTheme]
+
+# =================== SUONI PER SEVERITY ===================
+$script:soundEnabled = $true
+$script:severitySounds = @{
+    CRITICAL = @{ Frequency = 1000; Duration = 500; Repeat = 3 }    # Acuto, lungo, 3 volte
+    ATTENTION = @{ Frequency = 700; Duration = 300; Repeat = 2 }    # Medio, 2 volte
+    TROUBLE = @{ Frequency = 500; Duration = 200; Repeat = 1 }      # Basso, 1 volta
+}
+
+function Play-SeveritySound {
+    param([string]$Severity)
+    
+    if (-not $script:soundEnabled) { return }
+    if (-not $chkSound.Checked) { return }
+    
+    try {
+        $sound = $script:severitySounds[$Severity]
+        if ($sound) {
+            for ($i = 0; $i -lt $sound.Repeat; $i++) {
+                [Console]::Beep($sound.Frequency, $sound.Duration)
+                if ($i -lt ($sound.Repeat - 1)) {
+                    Start-Sleep -Milliseconds 100
+                }
+            }
+        }
+    } catch {}
 }
 
 # =================== FUNZIONI UTILITY ===================
@@ -739,6 +843,342 @@ $cmbResolution.FlatStyle = "Flat"
 [void]$cmbResolution.Items.Add("1024x768")
 $cmbResolution.SelectedItem = "Auto"
 $panelHeader.Controls.Add($cmbResolution)
+
+# =================== THEME SELECTOR (in header) ===================
+$lblTheme = New-Object System.Windows.Forms.Label
+$lblTheme.Text = "THEME:"
+$lblTheme.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+$lblTheme.ForeColor = $theme.clear
+$lblTheme.Location = New-Object System.Drawing.Point(260, 28)
+$lblTheme.AutoSize = $true
+$panelHeader.Controls.Add($lblTheme)
+
+$cmbTheme = New-Object System.Windows.Forms.ComboBox
+$cmbTheme.Location = New-Object System.Drawing.Point(260, 50)
+$cmbTheme.Size = New-Object System.Drawing.Size(110, 28)
+$cmbTheme.DropDownStyle = "DropDownList"
+$cmbTheme.BackColor = $theme.bgInput
+$cmbTheme.ForeColor = $theme.textPrimary
+$cmbTheme.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+$cmbTheme.FlatStyle = "Flat"
+foreach ($themeName in $script:themes.Keys) {
+    [void]$cmbTheme.Items.Add($themeName)
+}
+$cmbTheme.SelectedItem = "Dark Blue"
+$panelHeader.Controls.Add($cmbTheme)
+
+# Funzione per applicare il tema a tutti i controlli
+function Apply-Theme {
+    param([string]$ThemeName)
+    
+    $script:currentTheme = $ThemeName
+    $script:theme = $script:themes[$ThemeName]
+    $global:theme = $script:theme
+    
+    # Form e panels principali
+    $form.BackColor = $script:theme.bgMain
+    $panelHeader.BackColor = $script:theme.bgPanel
+    $panelStats.BackColor = $script:theme.bgDeep
+    $panelControls.BackColor = $script:theme.bgPanel
+    $panelFilter.BackColor = $script:theme.bgElevated
+    $panelExcludeBar.BackColor = [System.Drawing.Color]::FromArgb(60, 30, 30)
+    $panelMatch.BackColor = [System.Drawing.Color]::FromArgb(30, 45, 80)
+    $panelLists.BackColor = $script:theme.bgMain
+    
+    # Header elements
+    $lblLogo.ForeColor = $script:theme.accent
+    $lblFontSize.ForeColor = $script:theme.accent
+    $lblResolution.ForeColor = $script:theme.attention
+    $lblTheme.ForeColor = $script:theme.clear
+    
+    # Combo boxes
+    $cmbFontSize.BackColor = $script:theme.bgInput
+    $cmbFontSize.ForeColor = $script:theme.textPrimary
+    $cmbResolution.BackColor = $script:theme.bgInput
+    $cmbResolution.ForeColor = $script:theme.textPrimary
+    $cmbTheme.BackColor = $script:theme.bgInput
+    $cmbTheme.ForeColor = $script:theme.textPrimary
+    $cmbProfile.BackColor = $script:theme.bgInput
+    $cmbProfile.ForeColor = $script:theme.textPrimary
+    
+    # Grid
+    $grid.BackgroundColor = $script:theme.bgDeep
+    $grid.DefaultCellStyle.BackColor = $script:theme.bgCard
+    $grid.DefaultCellStyle.ForeColor = $script:theme.textPrimary
+    $grid.ColumnHeadersDefaultCellStyle.BackColor = $script:theme.bgElevated
+    $grid.ColumnHeadersDefaultCellStyle.ForeColor = $script:theme.textPrimary
+    $grid.GridColor = $script:theme.border
+    
+    # Status
+    $panelStatus.BackColor = $script:theme.bgElevated
+    $lblStatusText.ForeColor = $script:theme.textSecond
+    
+    # GroupBoxes
+    $grpExclusions.ForeColor = $script:theme.critical
+    $grpMatchRules.ForeColor = $script:theme.accent
+    $listExclusions.BackColor = $script:theme.bgInput
+    $listExclusions.ForeColor = $script:theme.textPrimary
+    $listMatchRules.BackColor = $script:theme.bgInput
+    $listMatchRules.ForeColor = $script:theme.textPrimary
+    
+    # Refresh
+    $form.Refresh()
+}
+
+$cmbTheme.Add_SelectedIndexChanged({
+    Apply-Theme -ThemeName $cmbTheme.SelectedItem
+})
+
+# =================== DASHBOARD BUTTON (in header) ===================
+$btnDashboard = New-Object System.Windows.Forms.Button
+$btnDashboard.Text = "📊"
+$btnDashboard.Location = New-Object System.Drawing.Point(220, 20)
+$btnDashboard.Size = New-Object System.Drawing.Size(40, 40)
+$btnDashboard.BackColor = $theme.bgElevated
+$btnDashboard.ForeColor = $theme.accent
+$btnDashboard.FlatStyle = "Flat"
+$btnDashboard.Font = New-Object System.Drawing.Font("Segoe UI", 16)
+$btnDashboard.FlatAppearance.BorderColor = $theme.accent
+$btnDashboard.FlatAppearance.BorderSize = 2
+$panelHeader.Controls.Add($btnDashboard)
+
+# Funzione per disegnare il grafico a torta
+function Show-Dashboard {
+    $dashForm = New-Object System.Windows.Forms.Form
+    $dashForm.Text = "Ticket Monitor - Dashboard"
+    $dashForm.Size = New-Object System.Drawing.Size(700, 550)
+    $dashForm.StartPosition = "CenterScreen"
+    $dashForm.BackColor = $theme.bgDeep
+    $dashForm.FormBorderStyle = "FixedDialog"
+    $dashForm.MaximizeBox = $false
+    
+    # Titolo
+    $lblTitle = New-Object System.Windows.Forms.Label
+    $lblTitle.Text = "📊 ALERT DASHBOARD"
+    $lblTitle.Font = New-Object System.Drawing.Font("Segoe UI", 18, [System.Drawing.FontStyle]::Bold)
+    $lblTitle.ForeColor = $theme.accent
+    $lblTitle.Location = New-Object System.Drawing.Point(20, 15)
+    $lblTitle.AutoSize = $true
+    $dashForm.Controls.Add($lblTitle)
+    
+    # Conta per severity
+    $criticalCount = ($script:allEmails | Where-Object { $_.Sev -eq "CRITICAL" -and -not $_.IsCleared }).Count
+    $attentionCount = ($script:allEmails | Where-Object { $_.Sev -eq "ATTENTION" -and -not $_.IsCleared }).Count
+    $troubleCount = ($script:allEmails | Where-Object { $_.Sev -eq "TROUBLE" -and -not $_.IsCleared }).Count
+    $clearedCount = ($script:allEmails | Where-Object { $_.IsCleared }).Count
+    $totalActive = $criticalCount + $attentionCount + $troubleCount
+    
+    # Panel per il grafico a torta
+    $piePanel = New-Object System.Windows.Forms.Panel
+    $piePanel.Location = New-Object System.Drawing.Point(20, 60)
+    $piePanel.Size = New-Object System.Drawing.Size(320, 320)
+    $piePanel.BackColor = $theme.bgPanel
+    $dashForm.Controls.Add($piePanel)
+    
+    # Disegna il grafico a torta
+    $piePanel.Add_Paint({
+        param($sender, $e)
+        $g = $e.Graphics
+        $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+        
+        $rect = New-Object System.Drawing.Rectangle(30, 30, 260, 260)
+        
+        if ($totalActive -eq 0) {
+            # Cerchio vuoto
+            $brush = New-Object System.Drawing.SolidBrush($theme.textMuted)
+            $g.FillEllipse($brush, $rect)
+            $brush.Dispose()
+            
+            $textBrush = New-Object System.Drawing.SolidBrush($theme.textPrimary)
+            $font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+            $g.DrawString("No Active Alerts", $font, $textBrush, 85, 150)
+            $textBrush.Dispose()
+            $font.Dispose()
+        } else {
+            $startAngle = -90
+            
+            # CRITICAL (rosso)
+            if ($criticalCount -gt 0) {
+                $sweepAngle = ($criticalCount / $totalActive) * 360
+                $brush = New-Object System.Drawing.SolidBrush($theme.critical)
+                $g.FillPie($brush, $rect, $startAngle, $sweepAngle)
+                $brush.Dispose()
+                $startAngle += $sweepAngle
+            }
+            
+            # ATTENTION (giallo)
+            if ($attentionCount -gt 0) {
+                $sweepAngle = ($attentionCount / $totalActive) * 360
+                $brush = New-Object System.Drawing.SolidBrush($theme.attention)
+                $g.FillPie($brush, $rect, $startAngle, $sweepAngle)
+                $brush.Dispose()
+                $startAngle += $sweepAngle
+            }
+            
+            # TROUBLE (arancione)
+            if ($troubleCount -gt 0) {
+                $sweepAngle = ($troubleCount / $totalActive) * 360
+                $brush = New-Object System.Drawing.SolidBrush($theme.trouble)
+                $g.FillPie($brush, $rect, $startAngle, $sweepAngle)
+                $brush.Dispose()
+            }
+            
+            # Cerchio centrale (buco della ciambella)
+            $innerRect = New-Object System.Drawing.Rectangle(80, 80, 160, 160)
+            $innerBrush = New-Object System.Drawing.SolidBrush($theme.bgPanel)
+            $g.FillEllipse($innerBrush, $innerRect)
+            $innerBrush.Dispose()
+            
+            # Testo centrale
+            $textBrush = New-Object System.Drawing.SolidBrush($theme.textPrimary)
+            $fontBig = New-Object System.Drawing.Font("Consolas", 28, [System.Drawing.FontStyle]::Bold)
+            $fontSmall = New-Object System.Drawing.Font("Segoe UI", 10)
+            $g.DrawString($totalActive.ToString(), $fontBig, $textBrush, 125, 130)
+            $g.DrawString("ACTIVE", $fontSmall, $textBrush, 130, 175)
+            $textBrush.Dispose()
+            $fontBig.Dispose()
+            $fontSmall.Dispose()
+        }
+    })
+    
+    # Legenda
+    $legendPanel = New-Object System.Windows.Forms.Panel
+    $legendPanel.Location = New-Object System.Drawing.Point(360, 60)
+    $legendPanel.Size = New-Object System.Drawing.Size(300, 320)
+    $legendPanel.BackColor = $theme.bgPanel
+    $dashForm.Controls.Add($legendPanel)
+    
+    $yPos = 20
+    
+    # Titolo legenda
+    $lblLegend = New-Object System.Windows.Forms.Label
+    $lblLegend.Text = "SEVERITY BREAKDOWN"
+    $lblLegend.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
+    $lblLegend.ForeColor = $theme.textPrimary
+    $lblLegend.Location = New-Object System.Drawing.Point(15, $yPos)
+    $lblLegend.AutoSize = $true
+    $legendPanel.Controls.Add($lblLegend)
+    $yPos += 40
+    
+    # CRITICAL
+    $boxCritical = New-Object System.Windows.Forms.Panel
+    $boxCritical.Location = New-Object System.Drawing.Point(15, $yPos)
+    $boxCritical.Size = New-Object System.Drawing.Size(25, 25)
+    $boxCritical.BackColor = $theme.critical
+    $legendPanel.Controls.Add($boxCritical)
+    
+    $lblCritical = New-Object System.Windows.Forms.Label
+    $lblCritical.Text = "CRITICAL: $criticalCount"
+    $lblCritical.Font = New-Object System.Drawing.Font("Consolas", 12, [System.Drawing.FontStyle]::Bold)
+    $lblCritical.ForeColor = $theme.critical
+    $lblCritical.Location = New-Object System.Drawing.Point(50, $yPos + 2)
+    $lblCritical.AutoSize = $true
+    $legendPanel.Controls.Add($lblCritical)
+    $yPos += 45
+    
+    # ATTENTION
+    $boxAttention = New-Object System.Windows.Forms.Panel
+    $boxAttention.Location = New-Object System.Drawing.Point(15, $yPos)
+    $boxAttention.Size = New-Object System.Drawing.Size(25, 25)
+    $boxAttention.BackColor = $theme.attention
+    $legendPanel.Controls.Add($boxAttention)
+    
+    $lblAttention = New-Object System.Windows.Forms.Label
+    $lblAttention.Text = "ATTENTION: $attentionCount"
+    $lblAttention.Font = New-Object System.Drawing.Font("Consolas", 12, [System.Drawing.FontStyle]::Bold)
+    $lblAttention.ForeColor = $theme.attention
+    $lblAttention.Location = New-Object System.Drawing.Point(50, $yPos + 2)
+    $lblAttention.AutoSize = $true
+    $legendPanel.Controls.Add($lblAttention)
+    $yPos += 45
+    
+    # TROUBLE
+    $boxTrouble = New-Object System.Windows.Forms.Panel
+    $boxTrouble.Location = New-Object System.Drawing.Point(15, $yPos)
+    $boxTrouble.Size = New-Object System.Drawing.Size(25, 25)
+    $boxTrouble.BackColor = $theme.trouble
+    $legendPanel.Controls.Add($boxTrouble)
+    
+    $lblTrouble = New-Object System.Windows.Forms.Label
+    $lblTrouble.Text = "TROUBLE: $troubleCount"
+    $lblTrouble.Font = New-Object System.Drawing.Font("Consolas", 12, [System.Drawing.FontStyle]::Bold)
+    $lblTrouble.ForeColor = $theme.trouble
+    $lblTrouble.Location = New-Object System.Drawing.Point(50, $yPos + 2)
+    $lblTrouble.AutoSize = $true
+    $legendPanel.Controls.Add($lblTrouble)
+    $yPos += 45
+    
+    # Separatore
+    $sep = New-Object System.Windows.Forms.Panel
+    $sep.Location = New-Object System.Drawing.Point(15, $yPos)
+    $sep.Size = New-Object System.Drawing.Size(250, 2)
+    $sep.BackColor = $theme.border
+    $legendPanel.Controls.Add($sep)
+    $yPos += 15
+    
+    # CLEARED
+    $boxCleared = New-Object System.Windows.Forms.Panel
+    $boxCleared.Location = New-Object System.Drawing.Point(15, $yPos)
+    $boxCleared.Size = New-Object System.Drawing.Size(25, 25)
+    $boxCleared.BackColor = $theme.clear
+    $legendPanel.Controls.Add($boxCleared)
+    
+    $lblCleared = New-Object System.Windows.Forms.Label
+    $lblCleared.Text = "CLEARED: $clearedCount"
+    $lblCleared.Font = New-Object System.Drawing.Font("Consolas", 12, [System.Drawing.FontStyle]::Bold)
+    $lblCleared.ForeColor = $theme.clear
+    $lblCleared.Location = New-Object System.Drawing.Point(50, $yPos + 2)
+    $lblCleared.AutoSize = $true
+    $legendPanel.Controls.Add($lblCleared)
+    $yPos += 45
+    
+    # TOTAL
+    $lblTotal = New-Object System.Windows.Forms.Label
+    $lblTotal.Text = "TOTAL EMAILS: $($script:allEmails.Count)"
+    $lblTotal.Font = New-Object System.Drawing.Font("Consolas", 11)
+    $lblTotal.ForeColor = $theme.textSecond
+    $lblTotal.Location = New-Object System.Drawing.Point(15, $yPos + 10)
+    $lblTotal.AutoSize = $true
+    $legendPanel.Controls.Add($lblTotal)
+    
+    # Statistiche aggiuntive in basso
+    $statsPanel = New-Object System.Windows.Forms.Panel
+    $statsPanel.Location = New-Object System.Drawing.Point(20, 400)
+    $statsPanel.Size = New-Object System.Drawing.Size(640, 100)
+    $statsPanel.BackColor = $theme.bgPanel
+    $dashForm.Controls.Add($statsPanel)
+    
+    # Percentuali
+    $critPct = if ($totalActive -gt 0) { [math]::Round(($criticalCount / $totalActive) * 100, 1) } else { 0 }
+    $attPct = if ($totalActive -gt 0) { [math]::Round(($attentionCount / $totalActive) * 100, 1) } else { 0 }
+    $troPct = if ($totalActive -gt 0) { [math]::Round(($troubleCount / $totalActive) * 100, 1) } else { 0 }
+    
+    $lblStats = New-Object System.Windows.Forms.Label
+    $lblStats.Text = "📈 STATISTICS`n`nCritical Rate: $critPct%   |   Attention Rate: $attPct%   |   Trouble Rate: $troPct%`nResolution Rate: $(if ($script:allEmails.Count -gt 0) { [math]::Round(($clearedCount / $script:allEmails.Count) * 100, 1) } else { 0 })%"
+    $lblStats.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+    $lblStats.ForeColor = $theme.textPrimary
+    $lblStats.Location = New-Object System.Drawing.Point(15, 10)
+    $lblStats.Size = New-Object System.Drawing.Size(610, 80)
+    $statsPanel.Controls.Add($lblStats)
+    
+    # Bottone chiudi
+    $btnClose = New-Object System.Windows.Forms.Button
+    $btnClose.Text = "CLOSE"
+    $btnClose.Size = New-Object System.Drawing.Size(100, 35)
+    $btnClose.Location = New-Object System.Drawing.Point(580, 15)
+    $btnClose.BackColor = $theme.bgElevated
+    $btnClose.ForeColor = $theme.textSecond
+    $btnClose.FlatStyle = "Flat"
+    $btnClose.FlatAppearance.BorderColor = $theme.border
+    $btnClose.Add_Click({ $dashForm.Close() })
+    $dashForm.Controls.Add($btnClose)
+    
+    [void]$dashForm.ShowDialog()
+}
+
+$btnDashboard.Add_Click({
+    Show-Dashboard
+})
 
 # Scala di riferimento (design originale)
 $script:baseWidth = 1650
@@ -3018,16 +3458,34 @@ $script:timer.Add_Tick({
         $lblStatusText.Text = "Checking..."
         $lblStatusDot.ForeColor = $theme.attention
         [System.Windows.Forms.Application]::DoEvents()
+        
+        # Memorizza conteggi prima dello scan
+        $prevCritical = ($script:allEmails | Where-Object { $_.Sev -eq "CRITICAL" -and -not $_.IsCleared }).Count
+        $prevAttention = ($script:allEmails | Where-Object { $_.Sev -eq "ATTENTION" -and -not $_.IsCleared }).Count
+        $prevTrouble = ($script:allEmails | Where-Object { $_.Sev -eq "TROUBLE" -and -not $_.IsCleared }).Count
+        
         $new = Invoke-ScanMails -IsInitial $false
+        
         if ($new -gt 0) { 
             $lblStatusText.Text = "+$new new @ $(Get-Date -Format 'HH:mm:ss')" 
-            # Suono di notifica per nuove email (se abilitato)
+            
+            # Calcola nuovi conteggi
+            $newCritical = ($script:allEmails | Where-Object { $_.Sev -eq "CRITICAL" -and -not $_.IsCleared }).Count
+            $newAttention = ($script:allEmails | Where-Object { $_.Sev -eq "ATTENTION" -and -not $_.IsCleared }).Count
+            $newTrouble = ($script:allEmails | Where-Object { $_.Sev -eq "TROUBLE" -and -not $_.IsCleared }).Count
+            
+            # Suono basato sulla severity più alta trovata (se abilitato)
             if ($chkSound.Checked) {
-                try { 
-                    [System.Media.SystemSounds]::Exclamation.Play()
-                    # Beep aggiuntivo più forte
-                    [Console]::Beep(800, 300)
-                } catch {}
+                if ($newCritical -gt $prevCritical) {
+                    Play-SeveritySound -Severity "CRITICAL"
+                } elseif ($newAttention -gt $prevAttention) {
+                    Play-SeveritySound -Severity "ATTENTION"
+                } elseif ($newTrouble -gt $prevTrouble) {
+                    Play-SeveritySound -Severity "TROUBLE"
+                } else {
+                    # Suono generico per CLEAR o altro
+                    try { [Console]::Beep(600, 150) } catch {}
+                }
             }
         }
         else { $lblStatusText.Text = "OK @ $(Get-Date -Format 'HH:mm:ss')" }
