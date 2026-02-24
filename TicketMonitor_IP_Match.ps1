@@ -1801,12 +1801,140 @@ $lblStatCritical = New-StatCard -Parent $panelStats -X 25 -Label "CRITICAL" -Col
 $lblStatClear = New-StatCard -Parent $panelStats -X 200 -Label "CLEARED" -Color $theme.clear
 $lblStatTotal = New-StatCard -Parent $panelStats -X 375 -Label "TOTAL" -Color $theme.accent
 
-# =================== PIE CHART INTEGRATO (a destra delle stats) ===================
+# =================== PIE CHART OVERLAY DRAGGABLE + RESIZABLE ===================
+# Stato drag & resize
+$script:pieDragging = $false
+$script:pieResizing = $false
+$script:pieDragOffset = $null
+$script:pieResizeStart = $null
+$script:pieResizeOrigSize = $null
+$script:pieMinSize = New-Object System.Drawing.Size(180, 110)
+$script:pieMaxSize = New-Object System.Drawing.Size(450, 350)
+$script:pieResizeGripSize = 14
+
+# Container overlay
+$script:pieOverlay = New-Object System.Windows.Forms.Panel
+$script:pieOverlay.Size = New-Object System.Drawing.Size(220, 130)
+$script:pieOverlay.BackColor = $theme.bgPanel
+
+# Paint: bordo + grip di resize in basso a destra
+$script:pieOverlay.Add_Paint({
+    param($sender, $e)
+    $g = $e.Graphics
+    $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+    $borderPen = New-Object System.Drawing.Pen($theme.border, 1)
+    $g.DrawRectangle($borderPen, 0, 0, ($sender.Width - 1), ($sender.Height - 1))
+    $borderPen.Dispose()
+    
+    # Disegna grip resize (3 linee diagonali in basso a destra)
+    $gripPen = New-Object System.Drawing.Pen($theme.textMuted, 1)
+    $w = $sender.Width; $h = $sender.Height
+    $g.DrawLine($gripPen, ($w - 4), ($h - 1), ($w - 1), ($h - 4))
+    $g.DrawLine($gripPen, ($w - 8), ($h - 1), ($w - 1), ($h - 8))
+    $g.DrawLine($gripPen, ($w - 12), ($h - 1), ($w - 1), ($h - 12))
+    $gripPen.Dispose()
+})
+
+# Funzione per ricalcolare layout interno in base alla dimensione overlay
+function Update-PieOverlayLayout {
+    $ow = $script:pieOverlay.Width
+    $oh = $script:pieOverlay.Height
+    
+    # Il pie occupa la parte sinistra, proporzionale all'altezza
+    $pieSize = [Math]::Min(($oh - 30), [Math]::Min(($ow / 2 - 10), 200))
+    $pieSize = [Math]::Max($pieSize, 50)
+    
+    $script:piePanel.Location = New-Object System.Drawing.Point(8, 8)
+    $script:piePanel.Size = New-Object System.Drawing.Size($pieSize, $pieSize)
+    
+    # Legenda a destra del pie
+    $legendX = $pieSize + 18
+    $legendW = [Math]::Max(($ow - $legendX - 8), 60)
+    $script:lblPieLegend.Location = New-Object System.Drawing.Point($legendX, 10)
+    $script:lblPieLegend.Size = New-Object System.Drawing.Size($legendW, ($oh - 30))
+    
+    # Calcola font size legenda in base allo spazio
+    $legendFontSize = if ($oh -gt 200) { 10 } elseif ($oh -gt 150) { 9 } else { 8 }
+    $script:lblPieLegend.Font = New-Object System.Drawing.Font("Consolas", $legendFontSize)
+    
+    # Titolo in basso
+    $script:lblPieTitle.Location = New-Object System.Drawing.Point(8, ($oh - 20))
+    
+    $script:piePanel.Refresh()
+    $script:pieOverlay.Refresh()
+}
+
+# Cambio cursore in base alla posizione (grip resize vs drag)
+$script:pieOverlay.Add_MouseMove({
+    param($sender, $e)
+    $w = $sender.Width; $h = $sender.Height
+    $gripZone = $script:pieResizeGripSize
+    
+    if ($script:pieResizing) {
+        # Resize attivo
+        $deltaX = [System.Windows.Forms.Cursor]::Position.X - $script:pieResizeStart.X
+        $deltaY = [System.Windows.Forms.Cursor]::Position.Y - $script:pieResizeStart.Y
+        $newW = [Math]::Max($script:pieMinSize.Width, [Math]::Min($script:pieMaxSize.Width, $script:pieResizeOrigSize.Width + $deltaX))
+        $newH = [Math]::Max($script:pieMinSize.Height, [Math]::Min($script:pieMaxSize.Height, $script:pieResizeOrigSize.Height + $deltaY))
+        $script:pieOverlay.Size = New-Object System.Drawing.Size($newW, $newH)
+        Update-PieOverlayLayout
+    }
+    elseif ($script:pieDragging) {
+        # Drag attivo
+        $parentPos = $form.PointToClient([System.Windows.Forms.Cursor]::Position)
+        $newX = $parentPos.X - $script:pieDragOffset.X
+        $newY = $parentPos.Y - $script:pieDragOffset.Y
+        # Clamp dentro la grid
+        $newX = [Math]::Max(0, [Math]::Min(($form.ClientSize.Width - $script:pieOverlay.Width), $newX))
+        $newY = [Math]::Max(0, [Math]::Min(($form.ClientSize.Height - $script:pieOverlay.Height), $newY))
+        $script:pieOverlay.Location = New-Object System.Drawing.Point($newX, $newY)
+    }
+    else {
+        # Cambia cursore: resize grip o move
+        if ($e.X -ge ($w - $gripZone) -and $e.Y -ge ($h - $gripZone)) {
+            $sender.Cursor = [System.Windows.Forms.Cursors]::SizeNWSE
+        } else {
+            $sender.Cursor = [System.Windows.Forms.Cursors]::SizeAll
+        }
+    }
+})
+
+$script:pieOverlay.Add_MouseDown({
+    param($sender, $e)
+    if ($e.Button -ne "Left") { return }
+    $w = $sender.Width; $h = $sender.Height
+    $gripZone = $script:pieResizeGripSize
+    
+    if ($e.X -ge ($w - $gripZone) -and $e.Y -ge ($h - $gripZone)) {
+        # Inizio resize
+        $script:pieResizing = $true
+        $script:pieResizeStart = [System.Windows.Forms.Cursor]::Position
+        $script:pieResizeOrigSize = $script:pieOverlay.Size
+    } else {
+        # Inizio drag
+        $script:pieDragging = $true
+        $script:pieDragOffset = New-Object System.Drawing.Point($e.X, $e.Y)
+    }
+})
+
+$script:pieOverlay.Add_MouseUp({
+    param($sender, $e)
+    $script:pieDragging = $false
+    $script:pieResizing = $false
+})
+
+$script:pieOverlay.Add_MouseLeave({
+    # Se non stiamo facendo niente, reset cursore
+    if (-not $script:pieDragging -and -not $script:pieResizing) {
+        $script:pieOverlay.Cursor = [System.Windows.Forms.Cursors]::Default
+    }
+})
+
+# Pie chart panel (dentro l'overlay)
 $script:piePanel = New-Object System.Windows.Forms.Panel
-$script:piePanel.Location = New-Object System.Drawing.Point(560, 5)
+$script:piePanel.Location = New-Object System.Drawing.Point(8, 8)
 $script:piePanel.Size = New-Object System.Drawing.Size(90, 90)
 $script:piePanel.BackColor = $theme.bgPanel
-$panelStats.Controls.Add($script:piePanel)
 
 # Variabili per il pie chart
 $script:pieCritical = 0
@@ -1818,18 +1946,18 @@ $script:piePanel.Add_Paint({
     $g = $e.Graphics
     $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
     
-    $rect = New-Object System.Drawing.Rectangle(5, 5, 80, 80)
+    $pw = $sender.Width; $ph = $sender.Height
+    $ps = [Math]::Min($pw, $ph)
+    $rect = New-Object System.Drawing.Rectangle(2, 2, ($ps - 4), ($ps - 4))
     $total = $script:pieCritical + $script:pieAttention + $script:pieTrouble
     
     if ($total -eq 0) {
-        # Cerchio vuoto grigio
         $brush = New-Object System.Drawing.SolidBrush($theme.textMuted)
         $g.FillEllipse($brush, $rect)
         $brush.Dispose()
     } else {
         $startAngle = -90
         
-        # CRITICAL (rosso)
         if ($script:pieCritical -gt 0) {
             $sweepAngle = ($script:pieCritical / $total) * 360
             $brush = New-Object System.Drawing.SolidBrush($theme.critical)
@@ -1838,7 +1966,6 @@ $script:piePanel.Add_Paint({
             $startAngle += $sweepAngle
         }
         
-        # ATTENTION (giallo)
         if ($script:pieAttention -gt 0) {
             $sweepAngle = ($script:pieAttention / $total) * 360
             $brush = New-Object System.Drawing.SolidBrush($theme.attention)
@@ -1847,7 +1974,6 @@ $script:piePanel.Add_Paint({
             $startAngle += $sweepAngle
         }
         
-        # TROUBLE (arancione)
         if ($script:pieTrouble -gt 0) {
             $sweepAngle = ($script:pieTrouble / $total) * 360
             $brush = New-Object System.Drawing.SolidBrush($theme.trouble)
@@ -1855,33 +1981,106 @@ $script:piePanel.Add_Paint({
             $brush.Dispose()
         }
         
-        # Cerchio centrale (buco della ciambella)
-        $innerRect = New-Object System.Drawing.Rectangle(25, 25, 40, 40)
+        # Buco della ciambella (proporzionale)
+        $innerMargin = [Math]::Floor($ps * 0.22)
+        $innerSize = $ps - (2 * $innerMargin) - 4
+        $innerRect = New-Object System.Drawing.Rectangle(($innerMargin + 2), ($innerMargin + 2), $innerSize, $innerSize)
         $innerBrush = New-Object System.Drawing.SolidBrush($theme.bgPanel)
         $g.FillEllipse($innerBrush, $innerRect)
         $innerBrush.Dispose()
         
-        # Numero al centro
+        # Numero al centro (font proporzionale)
+        $fontSize = [Math]::Max(8, [Math]::Floor($ps * 0.13))
         $textBrush = New-Object System.Drawing.SolidBrush($theme.textPrimary)
-        $font = New-Object System.Drawing.Font("Consolas", 11, [System.Drawing.FontStyle]::Bold)
+        $font = New-Object System.Drawing.Font("Consolas", $fontSize, [System.Drawing.FontStyle]::Bold)
         $text = $total.ToString()
         $textSize = $g.MeasureString($text, $font)
-        $x = (90 - $textSize.Width) / 2
-        $y = (90 - $textSize.Height) / 2
+        $x = ($pw - $textSize.Width) / 2
+        $y = ($ph - $textSize.Height) / 2
         $g.DrawString($text, $font, $textBrush, $x, $y)
         $textBrush.Dispose()
         $font.Dispose()
     }
 })
 
-# Legenda mini accanto al pie
+# Drag anche dal pie panel (passthrough al parent overlay)
+$script:piePanel.Add_MouseDown({
+    param($sender, $e)
+    if ($e.Button -ne "Left") { return }
+    $script:pieDragging = $true
+    $parentPoint = $script:pieOverlay.PointToClient($sender.PointToScreen((New-Object System.Drawing.Point($e.X, $e.Y))))
+    $script:pieDragOffset = $parentPoint
+})
+$script:piePanel.Add_MouseMove({
+    param($sender, $e)
+    $sender.Cursor = [System.Windows.Forms.Cursors]::SizeAll
+    if ($script:pieDragging) {
+        $parentPos = $form.PointToClient([System.Windows.Forms.Cursor]::Position)
+        $newX = $parentPos.X - $script:pieDragOffset.X
+        $newY = $parentPos.Y - $script:pieDragOffset.Y
+        $newX = [Math]::Max(0, [Math]::Min(($form.ClientSize.Width - $script:pieOverlay.Width), $newX))
+        $newY = [Math]::Max(0, [Math]::Min(($form.ClientSize.Height - $script:pieOverlay.Height), $newY))
+        $script:pieOverlay.Location = New-Object System.Drawing.Point($newX, $newY)
+    }
+})
+$script:piePanel.Add_MouseUp({ $script:pieDragging = $false })
+
+$script:pieOverlay.Controls.Add($script:piePanel)
+
+# Legenda mini accanto al pie (dentro l'overlay)
 $script:lblPieLegend = New-Object System.Windows.Forms.Label
-$script:lblPieLegend.Location = New-Object System.Drawing.Point(660, 15)
-$script:lblPieLegend.Size = New-Object System.Drawing.Size(150, 70)
+$script:lblPieLegend.Location = New-Object System.Drawing.Point(105, 10)
+$script:lblPieLegend.Size = New-Object System.Drawing.Size(110, 80)
 $script:lblPieLegend.Font = New-Object System.Drawing.Font("Consolas", 8)
 $script:lblPieLegend.ForeColor = $theme.textSecond
-$script:lblPieLegend.Text = "ACTIVE ALERTS`n- CRITICAL: 0`n- ATTENTION: 0`n- TROUBLE: 0"
-$panelStats.Controls.Add($script:lblPieLegend)
+$script:lblPieLegend.Text = "ACTIVE ALERTS`n- CRIT: 0`n- ATTN: 0`n- TRBL: 0"
+$script:pieOverlay.Controls.Add($script:lblPieLegend)
+
+# Drag anche dalla label legenda
+$script:lblPieLegend.Add_MouseDown({
+    param($sender, $e)
+    if ($e.Button -ne "Left") { return }
+    $script:pieDragging = $true
+    $parentPoint = $script:pieOverlay.PointToClient($sender.PointToScreen((New-Object System.Drawing.Point($e.X, $e.Y))))
+    $script:pieDragOffset = $parentPoint
+})
+$script:lblPieLegend.Add_MouseMove({
+    param($sender, $e)
+    $sender.Cursor = [System.Windows.Forms.Cursors]::SizeAll
+    if ($script:pieDragging) {
+        $parentPos = $form.PointToClient([System.Windows.Forms.Cursor]::Position)
+        $newX = $parentPos.X - $script:pieDragOffset.X
+        $newY = $parentPos.Y - $script:pieDragOffset.Y
+        $newX = [Math]::Max(0, [Math]::Min(($form.ClientSize.Width - $script:pieOverlay.Width), $newX))
+        $newY = [Math]::Max(0, [Math]::Min(($form.ClientSize.Height - $script:pieOverlay.Height), $newY))
+        $script:pieOverlay.Location = New-Object System.Drawing.Point($newX, $newY)
+    }
+})
+$script:lblPieLegend.Add_MouseUp({ $script:pieDragging = $false })
+
+# Label titoletto in basso overlay
+$script:lblPieTitle = New-Object System.Windows.Forms.Label
+$script:lblPieTitle.Text = "OPEN ALERTS"
+$script:lblPieTitle.Font = New-Object System.Drawing.Font("Segoe UI", 7, [System.Drawing.FontStyle]::Bold)
+$script:lblPieTitle.ForeColor = $theme.textMuted
+$script:lblPieTitle.Location = New-Object System.Drawing.Point(8, 105)
+$script:lblPieTitle.AutoSize = $true
+$script:pieOverlay.Controls.Add($script:lblPieTitle)
+
+# Aggiunge l'overlay sopra tutto il form
+$form.Controls.Add($script:pieOverlay)
+$script:pieOverlay.BringToFront()
+
+# Posiziona inizialmente in alto a destra
+function Update-PieOverlayPosition {
+    $margin = 15
+    $newX = $form.ClientSize.Width - $script:pieOverlay.Width - $margin
+    $newY = $margin
+    $script:pieOverlay.Location = New-Object System.Drawing.Point($newX, $newY)
+    Update-PieOverlayLayout
+}
+
+Update-PieOverlayPosition
 
 # Funzione per aggiornare il pie chart
 function Update-PieChart {
@@ -1889,7 +2088,7 @@ function Update-PieChart {
     $script:pieAttention = ($script:allEmails | Where-Object { $_.Sev -eq "ATTENTION" -and -not $_.IsCleared -and -not $_.IsEscalated }).Count
     $script:pieTrouble = ($script:allEmails | Where-Object { $_.Sev -eq "TROUBLE" -and -not $_.IsCleared -and -not $_.IsEscalated }).Count
     
-    $script:lblPieLegend.Text = "ACTIVE ALERTS`n- CRITICAL: $($script:pieCritical)`n- ATTENTION: $($script:pieAttention)`n- TROUBLE: $($script:pieTrouble)"
+    $script:lblPieLegend.Text = "ACTIVE ALERTS`n- CRIT: $($script:pieCritical)`n- ATTN: $($script:pieAttention)`n- TRBL: $($script:pieTrouble)"
     
     $script:piePanel.Refresh()
 }
