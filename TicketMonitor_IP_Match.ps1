@@ -3127,16 +3127,54 @@ function Refresh-GridWithNewRules {
 }
 
 function Get-AllMailFolders {
-    param([object]$Folder, [int]$Depth = 0)
+    param([object]$Folder, [int]$Depth = 0, [int]$MaxDepth = 30)
     
     $list = New-Object System.Collections.ArrayList
-    [void]$list.Add($Folder)
     
-    foreach ($sub in $Folder.Folders) {
+    # Protezione ricorsione infinita
+    if ($Depth -gt $MaxDepth) { return $list }
+    
+    # Aggiungi la cartella corrente solo se ha Items accessibili
+    try {
+        $null = $Folder.Items.Count
+        [void]$list.Add($Folder)
+    } catch {
+        # Cartella senza Items (es. root pura) - aggiungila comunque per navigare i figli
         try {
-            $subList = Get-AllMailFolders -Folder $sub -Depth ($Depth + 1)
-            foreach ($f in $subList) { [void]$list.Add($f) }
+            $null = $Folder.Folders.Count
+            [void]$list.Add($Folder)
         } catch {}
+    }
+    
+    # Enumera sottocartelle per INDICE (più affidabile di foreach con COM)
+    try {
+        $subCount = $Folder.Folders.Count
+    } catch {
+        $subCount = 0
+    }
+    
+    for ($i = 1; $i -le $subCount; $i++) {
+        try {
+            $sub = $Folder.Folders.Item($i)
+            if ($null -eq $sub) { continue }
+            
+            # Salta cartelle di ricerca (DefaultItemType = -1 o classe speciale)
+            try {
+                $folderClass = $sub.DefaultItemType
+                # Le Search Folders hanno spesso problemi, ma le includiamo se accessibili
+            } catch {}
+            
+            $subList = Get-AllMailFolders -Folder $sub -Depth ($Depth + 1) -MaxDepth $MaxDepth
+            foreach ($f in $subList) { [void]$list.Add($f) }
+        } catch {
+            # Cartella non accessibile - logga e continua
+            try {
+                $badName = $Folder.Folders.Item($i).Name
+                [void]$script:folderScanLog.Add("SKIP: Cannot access subfolder '$badName' at depth $Depth")
+            } catch {
+                [void]$script:folderScanLog.Add("SKIP: Cannot access subfolder index $i at depth $Depth")
+            }
+        }
     }
     
     return $list
@@ -3159,7 +3197,59 @@ function Invoke-ScanMails {
         $filter = "[ReceivedTime] >= '$filterDate'"
         
         $root = $script:selectedStore.GetRootFolder()
-        $allFolders = Get-AllMailFolders -Folder $root
+        
+        # Raccogli cartelle da TUTTE le sorgenti possibili
+        $allFolderPaths = @{}  # Per deduplicazione
+        $allFolders = New-Object System.Collections.ArrayList
+        
+        # 1. Scansiona ricorsivamente dalla root
+        $rootFolders = Get-AllMailFolders -Folder $root
+        foreach ($f in $rootFolders) {
+            try {
+                $path = $f.FolderPath
+                if (-not $allFolderPaths.ContainsKey($path)) {
+                    $allFolderPaths[$path] = $true
+                    [void]$allFolders.Add($f)
+                }
+            } catch {
+                # Se non ha FolderPath usa EntryID come chiave
+                try {
+                    $eid = $f.EntryID
+                    if (-not $allFolderPaths.ContainsKey($eid)) {
+                        $allFolderPaths[$eid] = $true
+                        [void]$allFolders.Add($f)
+                    }
+                } catch {
+                    [void]$allFolders.Add($f)
+                }
+            }
+        }
+        
+        # 2. Prova anche le cartelle standard di Outlook (Inbox, Sent, ecc.) come fallback
+        $defaultFolderTypes = @(6, 5, 4, 3, 16, 23)  # Inbox=6, Sent=5, Deleted=4, Outbox=3, Drafts=16, Junk=23
+        foreach ($folderType in $defaultFolderTypes) {
+            try {
+                $defFolder = $script:selectedStore.GetDefaultFolder($folderType)
+                if ($defFolder) {
+                    $defPath = try { $defFolder.FolderPath } catch { "default_$folderType" }
+                    if (-not $allFolderPaths.ContainsKey($defPath)) {
+                        $allFolderPaths[$defPath] = $true
+                        [void]$allFolders.Add($defFolder)
+                        # Scansiona anche le sottocartelle di queste
+                        $defSubs = Get-AllMailFolders -Folder $defFolder
+                        foreach ($ds in $defSubs) {
+                            try {
+                                $dsPath = $ds.FolderPath
+                                if (-not $allFolderPaths.ContainsKey($dsPath)) {
+                                    $allFolderPaths[$dsPath] = $true
+                                    [void]$allFolders.Add($ds)
+                                }
+                            } catch {}
+                        }
+                    }
+                }
+            } catch {}
+        }
         
         # Reset log cartelle
         $script:folderScanLog.Clear()
@@ -3280,7 +3370,15 @@ function Invoke-ScanMails {
         
         # Log finale
         [void]$script:folderScanLog.Add("---")
-        [void]$script:folderScanLog.Add("TOTAL: $totalFoundInFolders alerts in " + $allFolders.Count + " folders")
+        [void]$script:folderScanLog.Add("TOTAL: $totalFoundInFolders alerts in " + $allFolders.Count + " folders scanned")
+        
+        # Log di TUTTE le cartelle scansionate (per debug)
+        [void]$script:folderScanLog.Add("--- ALL SCANNED FOLDERS ---")
+        foreach ($folder in $allFolders) {
+            $fp = try { $folder.FolderPath } catch { "(unknown path)" }
+            $fc = try { $folder.Items.Count } catch { "?" }
+            [void]$script:folderScanLog.Add("  FOLDER: $fp (total items: $fc)")
+        }
         
         if ($newEmails.Count -gt 0) {
             
