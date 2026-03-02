@@ -3309,18 +3309,21 @@ function Invoke-ScanMails {
             try {
                 if ($useManualFilter) {
                     # Fallback: prendi TUTTI gli items e filtra manualmente per data
-                    $filteredItems = $folder.Items
-                    $filteredItems.Sort("[ReceivedTime]", $true)
+                    $folderItems = $folder.Items
                 } else {
-                    $filteredItems = $folder.Items.Restrict($filter)
-                    $filteredItems.Sort("[ReceivedTime]", $true)
+                    $folderItems = $folder.Items.Restrict($filter)
                 }
+                $folderItems.Sort("[ReceivedTime]", $false)  # Ascendente: vecchi -> nuovi (prende TUTTO fino all'ultimo)
             } catch {
                 [void]$script:folderScanLog.Add("ERROR: $folderPath - Cannot access")
                 continue
             }
             
-            foreach ($mail in $filteredItems) {
+            # Usa GetFirst/GetNext invece di foreach - COM Outlook perde items con foreach
+            $mail = $null
+            try { $mail = $folderItems.GetFirst() } catch { $mail = $null }
+            
+            while ($null -ne $mail) {
                 
                 $processed++
                 if ($processed % 20 -eq 0) {
@@ -3328,22 +3331,26 @@ function Invoke-ScanMails {
                     if (-not $script:isRunning) { break }
                 }
                 
+                $currentMail = $mail
+                # Avanza subito al prossimo (prima di qualsiasi continue/skip)
+                try { $mail = $folderItems.GetNext() } catch { $mail = $null }
+                
                 try {
-                    if ($mail.Class -ne 43) { continue }
+                    if ($currentMail.Class -ne 43) { continue }
                     
                     # Filtro manuale per data se Restrict non funziona
                     if ($useManualFilter) {
                         try {
-                            if ($mail.ReceivedTime -lt $startDT) { continue }
+                            if ($currentMail.ReceivedTime -lt $startDT) { continue }
                         } catch { continue }
                     }
                     
-                    $entryId = $mail.EntryID
+                    $entryId = $currentMail.EntryID
                     if ($script:scannedIds.ContainsKey($entryId)) { continue }
                     $script:scannedIds[$entryId] = $true
                     
-                    $subject = $mail.Subject
-                    $body = $mail.Body
+                    $subject = $currentMail.Subject
+                    $body = $currentMail.Body
                     $text = ("$subject $body").ToUpperInvariant()
                     
                     $sev = $null
@@ -3356,11 +3363,11 @@ function Invoke-ScanMails {
                     elseif ($text -match "TROUBLE") { $sev = "TROUBLE" }
                     else { $sev = "OTHER" }
                     
-                    $senderInfo = Get-SenderInfo -Mail $mail
+                    $senderInfo = Get-SenderInfo -Mail $currentMail
                     $sender = $senderInfo.Email
                     $senderName = $senderInfo.Name
                     $domain = Get-EmailDomain -Email $sender
-                    $recTime = $mail.ReceivedTime
+                    $recTime = $currentMail.ReceivedTime
                     
                     $displaySender = if ($sender -match "^/O=") { $senderName } else { $sender }
                     
@@ -3380,7 +3387,7 @@ function Invoke-ScanMails {
                         SenderName = $senderName
                         Subject = $subject
                         Time = $recTime
-                        Mail = $mail
+                        Mail = $currentMail
                         Body = $body
                         IPs = $extractedIPs
                         IPDisplay = $ipDisplay
@@ -3401,7 +3408,7 @@ function Invoke-ScanMails {
                     elseif ($sev -eq "OTHER") { $folderOtherCount++ }
                     
                 } catch { continue }
-            }
+            }  # end while GetFirst/GetNext
             
             # Log del risultato per questa cartella
             if ($folderEmailCount -gt 0) {
