@@ -3192,9 +3192,38 @@ function Invoke-ScanMails {
         if (-not $script:selectedStore) { return 0 }
         
         $startDT = $dtpDate.Value.Date.AddHours($nudHour.Value).AddMinutes($nudMinute.Value)
-        # Usa formato dd/MM/yyyy per sistemi italiani
-        $filterDate = $startDT.ToString("dd/MM/yyyy HH:mm")
-        $filter = "[ReceivedTime] >= '$filterDate'"
+        
+        # Outlook MAPI Restrict è sensibile alla locale per il formato data.
+        # Proviamo più formati per massima compatibilità, con fallback a filtro manuale.
+        $filterFormats = @(
+            $startDT.ToString("dd/MM/yyyy HH:mm"),      # Italiano: 02/03/2026 16:00
+            $startDT.ToString("MM/dd/yyyy HH:mm"),      # US: 03/02/2026 16:00
+            $startDT.ToString("yyyy-MM-dd HH:mm"),      # ISO
+            $startDT.ToString("d MMMM yyyy HH:mm", [System.Globalization.CultureInfo]::InvariantCulture)  # DAPI: 2 March 2026 16:00
+        )
+        
+        $filter = $null
+        $useManualFilter = $false
+        
+        # Testa quale formato funziona con un Restrict sulla inbox
+        try {
+            $testFolder = $script:selectedStore.GetDefaultFolder(6)  # Inbox
+            foreach ($fmt in $filterFormats) {
+                try {
+                    $testFilter = "[ReceivedTime] >= '$fmt'"
+                    $testResult = $testFolder.Items.Restrict($testFilter)
+                    $null = $testResult.Count  # Forza l'esecuzione per verificare che funzioni
+                    $filter = $testFilter
+                    break
+                } catch { continue }
+            }
+        } catch {}
+        
+        # Se nessun formato funziona, usiamo filtro manuale
+        if (-not $filter) {
+            $useManualFilter = $true
+            [void]$script:folderScanLog.Add("WARNING: Restrict filter failed, using manual date filtering (slower)")
+        }
         
         $root = $script:selectedStore.GetRootFolder()
         
@@ -3255,6 +3284,8 @@ function Invoke-ScanMails {
         $script:folderScanLog.Clear()
         
         if ($IsInitial) {
+            $filterInfo = if ($useManualFilter) { "MANUAL FILTER (date >= $startDT)" } else { "RESTRICT: $filter" }
+            [void]$script:folderScanLog.Add("FILTER: $filterInfo")
             $lblStatusText.Text = "Scanning " + $allFolders.Count + " folders..."
             [System.Windows.Forms.Application]::DoEvents()
         }
@@ -3276,8 +3307,14 @@ function Invoke-ScanMails {
             $folderOtherCount = 0
             
             try {
-                $filteredItems = $folder.Items.Restrict($filter)
-                $filteredItems.Sort("[ReceivedTime]", $true)
+                if ($useManualFilter) {
+                    # Fallback: prendi TUTTI gli items e filtra manualmente per data
+                    $filteredItems = $folder.Items
+                    $filteredItems.Sort("[ReceivedTime]", $true)
+                } else {
+                    $filteredItems = $folder.Items.Restrict($filter)
+                    $filteredItems.Sort("[ReceivedTime]", $true)
+                }
             } catch {
                 [void]$script:folderScanLog.Add("ERROR: $folderPath - Cannot access")
                 continue
@@ -3293,6 +3330,13 @@ function Invoke-ScanMails {
                 
                 try {
                     if ($mail.Class -ne 43) { continue }
+                    
+                    # Filtro manuale per data se Restrict non funziona
+                    if ($useManualFilter) {
+                        try {
+                            if ($mail.ReceivedTime -lt $startDT) { continue }
+                        } catch { continue }
+                    }
                     
                     $entryId = $mail.EntryID
                     if ($script:scannedIds.ContainsKey($entryId)) { continue }
