@@ -101,6 +101,7 @@ $script:themes = @{
         trouble     = [System.Drawing.Color]::FromArgb(255, 140, 66)
         clear       = [System.Drawing.Color]::FromArgb(0, 232, 144)
         resolved    = [System.Drawing.Color]::FromArgb(100, 180, 100)
+        other       = [System.Drawing.Color]::FromArgb(140, 160, 185)
     }
     "Dark Purple" = @{
         bgDeep      = [System.Drawing.Color]::FromArgb(10, 5, 18)
@@ -119,6 +120,7 @@ $script:themes = @{
         trouble     = [System.Drawing.Color]::FromArgb(255, 140, 66)
         clear       = [System.Drawing.Color]::FromArgb(0, 232, 144)
         resolved    = [System.Drawing.Color]::FromArgb(100, 180, 100)
+        other       = [System.Drawing.Color]::FromArgb(160, 140, 190)
     }
     "Dark Green" = @{
         bgDeep      = [System.Drawing.Color]::FromArgb(5, 12, 8)
@@ -137,6 +139,7 @@ $script:themes = @{
         trouble     = [System.Drawing.Color]::FromArgb(255, 140, 66)
         clear       = [System.Drawing.Color]::FromArgb(0, 232, 144)
         resolved    = [System.Drawing.Color]::FromArgb(100, 180, 100)
+        other       = [System.Drawing.Color]::FromArgb(130, 170, 150)
     }
     "Light" = @{
         bgDeep      = [System.Drawing.Color]::FromArgb(245, 247, 250)
@@ -155,6 +158,7 @@ $script:themes = @{
         trouble     = [System.Drawing.Color]::FromArgb(220, 120, 50)
         clear       = [System.Drawing.Color]::FromArgb(0, 160, 100)
         resolved    = [System.Drawing.Color]::FromArgb(80, 150, 80)
+        other       = [System.Drawing.Color]::FromArgb(120, 135, 155)
     }
     "Midnight" = @{
         bgDeep      = [System.Drawing.Color]::FromArgb(0, 0, 0)
@@ -173,6 +177,7 @@ $script:themes = @{
         trouble     = [System.Drawing.Color]::FromArgb(255, 140, 66)
         clear       = [System.Drawing.Color]::FromArgb(0, 232, 144)
         resolved    = [System.Drawing.Color]::FromArgb(100, 180, 100)
+        other       = [System.Drawing.Color]::FromArgb(150, 150, 170)
     }
 }
 
@@ -661,6 +666,10 @@ function Set-RowColor {
         "CLEAR" {
             $Row.DefaultCellStyle.BackColor = [System.Drawing.Color]::FromArgb(25, 0, 232, 144)
             $Row.DefaultCellStyle.ForeColor = $theme.clear
+        }
+        "OTHER" {
+            $Row.DefaultCellStyle.BackColor = [System.Drawing.Color]::FromArgb(20, 140, 160, 185)
+            $Row.DefaultCellStyle.ForeColor = $theme.other
         }
     }
 }
@@ -1800,6 +1809,7 @@ function New-StatCard {
 $lblStatCritical = New-StatCard -Parent $panelStats -X 25 -Label "CRITICAL" -Color $theme.critical
 $lblStatClear = New-StatCard -Parent $panelStats -X 200 -Label "CLEARED" -Color $theme.clear
 $lblStatTotal = New-StatCard -Parent $panelStats -X 375 -Label "TOTAL" -Color $theme.accent
+$lblStatOther = New-StatCard -Parent $panelStats -X 550 -Label "OTHER" -Color $theme.other
 
 # =================== PIE CHART OVERLAY DRAGGABLE + RESIZABLE ===================
 # Stato drag & resize
@@ -2377,17 +2387,25 @@ $chkClearFilter.AutoSize = $true
 $chkClearFilter.Checked = $true
 $panelFilter.Controls.Add($chkClearFilter)
 
+$chkOther = New-Object System.Windows.Forms.CheckBox
+$chkOther.Text = "OTHER"
+$chkOther.ForeColor = $theme.textSecond
+$chkOther.Location = New-Object System.Drawing.Point(480, 14)
+$chkOther.AutoSize = $true
+$chkOther.Checked = $true
+$panelFilter.Controls.Add($chkOther)
+
 $lblDomFilter = New-Object System.Windows.Forms.Label
 $lblDomFilter.Text = "DOMAINS"
 $lblDomFilter.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
 $lblDomFilter.ForeColor = $theme.textMuted
-$lblDomFilter.Location = New-Object System.Drawing.Point(500, 16)
+$lblDomFilter.Location = New-Object System.Drawing.Point(570, 16)
 $lblDomFilter.AutoSize = $true
 $panelFilter.Controls.Add($lblDomFilter)
 
 $btnSelectDomains = New-Object System.Windows.Forms.Button
 $btnSelectDomains.Text = "ALL DOMAINS"
-$btnSelectDomains.Location = New-Object System.Drawing.Point(570, 10)
+$btnSelectDomains.Location = New-Object System.Drawing.Point(640, 10)
 $btnSelectDomains.Size = New-Object System.Drawing.Size(180, 28)
 $btnSelectDomains.BackColor = $theme.bgInput
 $btnSelectDomains.ForeColor = $theme.textPrimary
@@ -2771,7 +2789,7 @@ $listMatchRules.Add_Click({
 
 # =================== UPDATE STATS ===================
 function Update-Stats {
-    $critical = 0; $attention = 0; $trouble = 0; $cleared = 0
+    $critical = 0; $attention = 0; $trouble = 0; $cleared = 0; $other = 0
     
     foreach ($email in $script:allEmails) {
         if (Test-EmailExcluded -Email $email) { continue }
@@ -2797,6 +2815,9 @@ function Update-Stats {
             "CLEAR" { 
                 $cleared++ 
             }
+            "OTHER" {
+                $other++
+            }
         }
     }
     
@@ -2804,6 +2825,7 @@ function Update-Stats {
     $lblStatCritical.Text = $critical.ToString()
     $lblStatClear.Text = $cleared.ToString()
     $lblStatTotal.Text = $totalActive.ToString()
+    $lblStatOther.Text = $other.ToString()
     
     # Aggiorna il grafico a torta
     Update-PieChart
@@ -2824,6 +2846,7 @@ function Apply-Filters {
         elseif ($baseSev -eq "ATTENTION" -and -not $chkAttention.Checked) { $show = $false }
         elseif ($baseSev -eq "TROUBLE" -and -not $chkTrouble.Checked) { $show = $false }
         elseif ($sev -eq "CLEAR" -and -not $chkClearFilter.Checked) { $show = $false }
+        elseif ($baseSev -eq "OTHER" -and -not $chkOther.Checked) { $show = $false }
         
         # Filtro multi-dominio: se selectedDomains non è vuoto, mostra solo quelli
         if ($show -and $script:selectedDomains.Count -gt 0) {
@@ -3069,6 +3092,9 @@ function Refresh-GridWithNewRules {
         elseif ($email.Sev -eq "CLEAR") {
             $displayStatus = "CLEAR"
         }
+        elseif ($email.Sev -eq "OTHER") {
+            $displayStatus = "INFO"
+        }
         
         $grid.Rows.Add(@(
             $displaySev,
@@ -3157,6 +3183,7 @@ function Invoke-ScanMails {
             $folderEmailCount = 0
             $folderCriticalCount = 0
             $folderClearCount = 0
+            $folderOtherCount = 0
             
             try {
                 $filteredItems = $folder.Items.Restrict($filter)
@@ -3193,7 +3220,7 @@ function Invoke-ScanMails {
                     elseif ($text -match "CRITICAL") { $sev = "CRITICAL" }
                     elseif ($text -match "ATTENTION") { $sev = "ATTENTION" }
                     elseif ($text -match "TROUBLE") { $sev = "TROUBLE" }
-                    else { continue }
+                    else { $sev = "OTHER" }
                     
                     $senderInfo = Get-SenderInfo -Mail $mail
                     $sender = $senderInfo.Email
@@ -3237,13 +3264,14 @@ function Invoke-ScanMails {
                     $folderEmailCount++
                     if ($sev -eq "CRITICAL") { $folderCriticalCount++ }
                     elseif ($sev -eq "CLEAR") { $folderClearCount++ }
+                    elseif ($sev -eq "OTHER") { $folderOtherCount++ }
                     
                 } catch { continue }
             }
             
             # Log del risultato per questa cartella
             if ($folderEmailCount -gt 0) {
-                [void]$script:folderScanLog.Add("FOUND: $folderPath -> $folderCriticalCount CRITICAL, $folderClearCount CLEAR")
+                [void]$script:folderScanLog.Add("FOUND: $folderPath -> $folderCriticalCount CRITICAL, $folderClearCount CLEAR, $folderOtherCount OTHER")
                 $totalFoundInFolders += $folderEmailCount
             }
             
@@ -3462,6 +3490,9 @@ function Invoke-ScanMails {
                     $displaySev = "$($email.Sev) -> CLEAR"
                     $displayStatus = "CLEARED"
                 }
+                elseif ($email.Sev -eq "OTHER") {
+                    $displayStatus = "INFO"
+                }
                 
                 $grid.Rows.Add(@(
                     $displaySev,
@@ -3641,6 +3672,7 @@ $chkCritical.Add_CheckedChanged({ Apply-Filters })
 $chkAttention.Add_CheckedChanged({ Apply-Filters })
 $chkTrouble.Add_CheckedChanged({ Apply-Filters })
 $chkClearFilter.Add_CheckedChanged({ Apply-Filters })
+$chkOther.Add_CheckedChanged({ Apply-Filters })
 
 # =================== FONT SIZE FUNCTION ===================
 function Apply-FontSize {
@@ -3666,6 +3698,7 @@ function Apply-FontSize {
     $lblStatCritical.Font = New-Object System.Drawing.Font("Consolas", $fs.Stats, [System.Drawing.FontStyle]::Bold)
     $lblStatClear.Font = New-Object System.Drawing.Font("Consolas", $fs.Stats, [System.Drawing.FontStyle]::Bold)
     $lblStatTotal.Font = New-Object System.Drawing.Font("Consolas", $fs.Stats, [System.Drawing.FontStyle]::Bold)
+    $lblStatOther.Font = New-Object System.Drawing.Font("Consolas", $fs.Stats, [System.Drawing.FontStyle]::Bold)
     
     # Labels
     $lblProfile.Font = New-Object System.Drawing.Font("Segoe UI", $fs.Label, [System.Drawing.FontStyle]::Bold)
@@ -3688,6 +3721,7 @@ function Apply-FontSize {
     $chkAttention.Font = New-Object System.Drawing.Font("Segoe UI", $fs.Normal)
     $chkTrouble.Font = New-Object System.Drawing.Font("Segoe UI", $fs.Normal)
     $chkClearFilter.Font = New-Object System.Drawing.Font("Segoe UI", $fs.Normal)
+    $chkOther.Font = New-Object System.Drawing.Font("Segoe UI", $fs.Normal)
     $chkContinuous.Font = New-Object System.Drawing.Font("Segoe UI", $fs.Normal)
     
     # ComboBoxes
